@@ -14,6 +14,7 @@ const client = new MongoClient(uri, {
 let graphqlTestDB;
 let userCollection;
 let todoCollection;
+let songsCollection;
 
 async function connectToDB() {
     try {
@@ -29,10 +30,13 @@ async function connectToDB() {
             userCollection = graphqlTestDB.collection('users');
         }
         if(!todoCollection) {
-            todoCollection = graphqlTestDB.collection('todos')
+            todoCollection = graphqlTestDB.collection('todos');
+        }
+        if(!songsCollection) {
+            songsCollection = graphqlTestDB.collection('songs');
         }
 
-        return {userCollection, todoCollection}
+        return {userCollection, todoCollection, songsCollection}
     }
 
     catch(error){

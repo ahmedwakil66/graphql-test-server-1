@@ -1,3 +1,4 @@
+import songsSchema from './songsSchema.js';
 import todosSchema from './todosSchema.js';
 import usersSchema from './usersSchema.js'
 
@@ -21,4 +22,4 @@ const rootSchema = `#graphql
   scalar Date
 `;
 
-export default [rootSchema, usersSchema, todosSchema];
+export default [rootSchema, usersSchema, todosSchema, songsSchema];

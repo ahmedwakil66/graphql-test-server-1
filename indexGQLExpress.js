@@ -4,12 +4,20 @@ import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHt
 import express from 'express';
 import http from 'http';
 import cors from 'cors';
+import env from './dotenv.config.js';
 
 import typeDefs from './graphql/schema/schema.js';
 import resolvers from './graphql/resolvers/resolvers.js';
 
 const app = express();
 const httpServer = http.createServer(app);
+
+app.use(
+  cors(),
+  express.json(),
+);
+
+app.get('/', (req, res) => res.send('you can use normal routing along with gql'))
 
 // Set up Apollo Server
 const server = new ApolloServer({
@@ -19,11 +27,7 @@ const server = new ApolloServer({
 });
 await server.start();
 
-app.use(
-  cors(),
-  express.json(),
-  expressMiddleware(server),
-);
+app.use('/graphql', expressMiddleware(server));
 
-await new Promise((resolve) => httpServer.listen({ port: process.env.port || 4000 }, resolve));
-console.log(`🚀 Server ready at http://localhost:${process.env.port || 4000}`);
+await new Promise((resolve) => httpServer.listen({ port: env.PORT || 4000 }, resolve));
+console.log(`🚀 Server ready at http://localhost:${env.PORT || 4000}`);

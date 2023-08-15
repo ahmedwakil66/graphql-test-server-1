@@ -60,7 +60,7 @@ const todosResolver = {
                     { _id: new ObjectId(args.todoId) },
                     { $set: { status: updatedStatus } }
                 )
-                if (!result.modifiedCount) throw new Error("Failed to Update todo.");
+                if (!result.modifiedCount > 0) throw new Error("Failed to Update todo.");
                 result.success = true;
                 result.message = `${oldTodo.title} is now ${updatedStatus}`;
                 return result;
@@ -93,7 +93,6 @@ const todosResolver = {
             const { todoCollection } = await connectToDB();
             try {
                 const result = await todoCollection.deleteOne({ _id: new ObjectId(args.todoId) })
-                if (!result.deletedCount > 0) throw new Error("Failed to Delete todo");
                 if (!result.deletedCount > 0) throw new Error("Failed to Delete todo");
                 result.success = true;
                 result.deletedId = args.todoId;
