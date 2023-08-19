@@ -1,4 +1,4 @@
-import dateResolver from '../customScalars/DateScalar.js';
+import dateResolver from '../customScalars/dateScalar.js';
 import songsResolver from './songsResolver.js';
 import todosResolver from './todosResolver.js';
 import usersResolver from './usersResolver.js';
