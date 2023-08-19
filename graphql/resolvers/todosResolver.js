@@ -1,24 +1,29 @@
 import connectToDB from "../../dbConfig/dbGql.js";
 import { ObjectId } from "mongodb";
+import { runJwtVerification, runSameUserCheck } from "../../verificationFunctions/verifyJWT.js";
 
 const todosResolver = {
     Query: {
-        todo: async (_, args) => {
+        todo: async (_, args, context) => {
+            runJwtVerification(context);
             const { todoCollection } = await connectToDB();
             return await todoCollection.findOne({ _id: new ObjectId(args.todoId) })
         },
-        todos: async (_, args) => {
-            const { todoCollection } = await connectToDB();
+        todos: async (_, args, context) => {
+            runJwtVerification(context);
+            runSameUserCheck(args.userId, context);
             let queryConditions = { userId: args.userId };
             if (args.status) {
                 queryConditions.status = args.status
             }
+            const { todoCollection } = await connectToDB();
             return await todoCollection.find(queryConditions).toArray();
         },
     },
 
     Todo: {
-        user: async (parent) => {
+        user: async (parent, _, context) => {
+            runSameUserCheck(parent.userId, context) //may create problem with admin query...
             const { userCollection } = await connectToDB();
             return await userCollection.findOne({ _id: new ObjectId(parent.userId) });
         }
@@ -29,12 +34,14 @@ const todosResolver = {
 
     //Mutations starts here
     Mutation: {
-        addTodo: async (_, args) => {
+        addTodo: async (_, args, context) => {
+            runJwtVerification(context);
             const newTodo = args.input;
+            runSameUserCheck(newTodo.userId, context);
             newTodo.timeEnded = null;
-            const { todoCollection } = await connectToDB();
             try {
-                const result = await todoCollection.insertOne(newTodo); 
+                const { todoCollection } = await connectToDB();
+                const result = await todoCollection.insertOne(newTodo);
                 newTodo._id = result.insertedId;
                 if (!result.insertedId) throw new Error("Failed to Save the new todo");
                 return {
@@ -50,12 +57,16 @@ const todosResolver = {
             }
         },
 
-        toggleTodo: async (_, args) => {
-            const { todoCollection } = await connectToDB();
-            const oldTodo = await todoCollection.findOne({ _id: new ObjectId(args.todoId) });
-            let updatedStatus = 'PENDING';
-            if (oldTodo.status === 'PENDING') updatedStatus = 'COMPLETED';
+        toggleTodo: async (_, args, context) => {
+            runJwtVerification(context)
             try {
+                const { todoCollection } = await connectToDB();
+                const oldTodo = await todoCollection.findOne({ _id: new ObjectId(args.todoId) });
+                
+                if(oldTodo) runSameUserCheck(oldTodo.userId.toString(), context);
+                let updatedStatus = 'PENDING';
+                if (oldTodo.status === 'PENDING') updatedStatus = 'COMPLETED';
+
                 const result = await todoCollection.updateOne(
                     { _id: new ObjectId(args.todoId) },
                     { $set: { status: updatedStatus } }
@@ -70,9 +81,11 @@ const todosResolver = {
             }
         },
 
-        updateTodo: async (_, args) => {
-            const { todoCollection } = await connectToDB();
+        updateTodo: async (_, args, context) => {
+            runJwtVerification(context);
+            runSameUserCheck(args.userId, context);
             try {
+                const { todoCollection } = await connectToDB();
                 const result = await todoCollection.updateOne(
                     { _id: new ObjectId(args.todoId) },
                     {
@@ -89,9 +102,11 @@ const todosResolver = {
             }
         },
 
-        deleteTodo: async (_, args) => {
-            const { todoCollection } = await connectToDB();
+        deleteTodo: async (_, args, context) => {
+            runJwtVerification(context);
+            runSameUserCheck(args.userId, context);
             try {
+                const { todoCollection } = await connectToDB();
                 const result = await todoCollection.deleteOne({ _id: new ObjectId(args.todoId) })
                 if (!result.deletedCount > 0) throw new Error("Failed to Delete todo");
                 result.success = true;

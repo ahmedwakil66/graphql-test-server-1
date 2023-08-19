@@ -65,8 +65,8 @@ const todosSchema = `#graphql
     extend type Mutation {
         addTodo(input: todo!): AddTodoMutationResponse
         toggleTodo(todoId: ID!): UpdateTodoResult
-        updateTodo(todoId: ID!, input: updatedDoc): UpdateTodoResult
-        deleteTodo(todoId: ID!): DeleteTodoResult
+        updateTodo(todoId: ID!, userId: ID!, input: updatedDoc): UpdateTodoResult
+        deleteTodo(todoId: ID!, userId: ID!): DeleteTodoResult
     }
 `
 

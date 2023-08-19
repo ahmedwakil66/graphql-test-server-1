@@ -11,7 +11,7 @@ const client = new MongoClient(uri, {
     }
 });
 
-let graphqlTestDB;
+let reactBootcampDB;
 let userCollection;
 let todoCollection;
 let songsCollection;
@@ -19,21 +19,21 @@ let songsCollection;
 async function connectToDB() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        if (!graphqlTestDB) {
+        if (!reactBootcampDB) {
             await client.connect();
-            graphqlTestDB = client.db('graphqlTestDB');
+            reactBootcampDB = client.db('reactBootcampDB');
             // Send a ping to confirm a successful connection
             await client.db("admin").command({ ping: 1 });
             console.log("Pinged your deployment. You successfully connected to MongoDB!");
         }
         if(!userCollection){
-            userCollection = graphqlTestDB.collection('users');
+            userCollection = reactBootcampDB.collection('users');
         }
         if(!todoCollection) {
-            todoCollection = graphqlTestDB.collection('todos');
+            todoCollection = reactBootcampDB.collection('todos');
         }
         if(!songsCollection) {
-            songsCollection = graphqlTestDB.collection('songs');
+            songsCollection = reactBootcampDB.collection('songs');
         }
 
         return {userCollection, todoCollection, songsCollection}

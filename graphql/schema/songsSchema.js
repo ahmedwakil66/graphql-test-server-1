@@ -61,7 +61,7 @@ const songsSchema = `#graphql
     extend type Mutation {
         addSong(input: song!): AddSongMutationResponse
         toggleSong(songId: ID!): UpdateSongResponse
-        deleteSong(songId: ID!): DeleteSongResponse
+        deleteSong(songId: ID!, userId: ID!): DeleteSongResponse
     }
 `;
 
