@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node indexGQLExpress.js",
+    "dev": "nodemon indexGQLExpress.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

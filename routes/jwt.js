@@ -13,7 +13,8 @@ router.post('/', async (req, res) => {
     const userData = await userCollection.findOne({ email: user.email }, {projection: {_id: 1, role: 1, email: 1}});
     
     if(!userData){
-        res.send({error: true, message: 'user does not exists / internal server error'})
+        res.send({error: true, message: 'user does not exists / internal server error'});
+        return;
     }
     const token = jwt.sign(userData, process.env.JWT_SECRET, {expiresIn: '1h'});
     
