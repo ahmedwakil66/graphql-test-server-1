@@ -23,7 +23,7 @@ const httpServer = http.createServer(app);
 //use general middle wires
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'https://reactbootcamp-ca.web.app'], // Replace with your client's origin
+    origin: ['http://localhost:5173', 'https://utility-social.web.app'], // Replace with your client's origin
     credentials: true // Allow sending cookies and other credentials
   }),
   cookieParser(),
