@@ -15,6 +15,7 @@ let reactBootcampDB;
 let userCollection;
 let todoCollection;
 let songsCollection;
+let postsCollection;
 
 async function connectToDB() {
     try {
@@ -35,8 +36,11 @@ async function connectToDB() {
         if(!songsCollection) {
             songsCollection = reactBootcampDB.collection('songs');
         }
+        if(!postsCollection) {
+            postsCollection = reactBootcampDB.collection('posts');
+        }
 
-        return {userCollection, todoCollection, songsCollection}
+        return {userCollection, todoCollection, songsCollection, postsCollection}
     }
 
     catch(error){
