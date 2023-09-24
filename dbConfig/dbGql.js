@@ -16,9 +16,9 @@ let userCollection;
 let todoCollection;
 let songsCollection;
 let postCollection;
-let likesCollection;
+let likeCollection;
 let commentsCollection;
-let savePostsCollection;
+let savePostCollection;
 
 async function connectToDB() {
     try {
@@ -30,32 +30,40 @@ async function connectToDB() {
             await client.db("admin").command({ ping: 1 });
             console.log("Pinged your deployment. You successfully connected to MongoDB!");
         }
-        if(!userCollection){
+        if (!userCollection) {
             userCollection = reactBootcampDB.collection('users');
         }
-        if(!todoCollection) {
+        if (!todoCollection) {
             todoCollection = reactBootcampDB.collection('todos');
         }
-        if(!songsCollection) {
+        if (!songsCollection) {
             songsCollection = reactBootcampDB.collection('songs');
         }
-        if(!postCollection) {
+        if (!postCollection) {
             postCollection = reactBootcampDB.collection('posts');
         }
-        if(!likesCollection) {
-            likesCollection = reactBootcampDB.collection('likes');
+        if (!likeCollection) {
+            likeCollection = reactBootcampDB.collection('likes');
         }
-        if(!commentsCollection) {
+        if (!commentsCollection) {
             commentsCollection = reactBootcampDB.collection('comments');
         }
-        if(!savePostsCollection) {
-            savePostsCollection = reactBootcampDB.collection('save_posts');
+        if (!savePostCollection) {
+            savePostCollection = reactBootcampDB.collection('save_posts');
         }
 
-        return {userCollection, todoCollection, songsCollection, postCollection, likesCollection, commentsCollection}
+        return {
+            userCollection,
+            todoCollection,
+            songsCollection,
+            postCollection,
+            likeCollection,
+            commentsCollection,
+            savePostCollection
+        }
     }
 
-    catch(error){
+    catch (error) {
         console.error(error);
         throw error;
     }

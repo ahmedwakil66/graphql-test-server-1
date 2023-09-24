@@ -23,7 +23,7 @@ const typeDefs = `#graphql
     type Like {
         _id: ID,
         postId: ID,
-        userId: ID,
+        postLikerId: ID,
         created_at: Date,
     }
 
@@ -36,9 +36,19 @@ const typeDefs = `#graphql
         user: User,
     }
 
+    type SavedPost {
+        _id: ID,
+        postId: ID,
+        userId: ID,
+        created_at: Date,
+        saved: Post,
+    }
+
     extend type Query {
         post(postId: ID!): Post
         feedPosts(userId: ID!): [Post]
+        savedPosts(userId: ID!): [SavedPost]
+        isPostAlreadySaved(postId: ID!, userId: ID!): Boolean
         # postsByUser(usrId: ID!): [Post]
     }
 
@@ -59,6 +69,12 @@ const typeDefs = `#graphql
         format: String,
     }
 
+    input savePost {
+        postId: ID,
+        userId: ID,
+        created_at: Date,
+    }
+
     type AddPostMutationResponse implements MutationResponse {
         code: String!
         success: Boolean!
@@ -67,8 +83,29 @@ const typeDefs = `#graphql
         post: Post #no new fetching, push insertedId in input and resend to the client
     }
 
+    type LikePostMutationResponse implements MutationResponse {
+        code: String!
+        success: Boolean!
+        message: String!
+        insertedId: String
+        deletedCount: Int
+        like: Like #no new fetching, push insertedId in input and resend to the client
+    }
+
+    type SavePostMutationResponse implements MutationResponse {
+        code: String!
+        success: Boolean!
+        message: String!
+        insertedId: String
+        deletedCount: Int
+    }
+
     extend type Mutation {
         addPost(newPost: post!): AddPostMutationResponse
+        likePost(postId: ID!, postLikerId: ID!, created_at: Date!): LikePostMutationResponse
+        unlikePost(likeId: ID!, postLikerId: ID!): LikePostMutationResponse
+        savePost(postToSave: savePost!): SavePostMutationResponse
+        removeSavedPost(postId: ID!, userId: ID!): SavePostMutationResponse
     }
 `;
 
