@@ -46,6 +46,12 @@ const postQueryResolvers = {
                 { postId: args.postId, userId: args.userId }
             );
             return Boolean(result)
+        },
+
+        commentsByPostId: async(_, args, context) => {
+            // runJwtVerification(context);
+            const { commentCollection } = await connectToDB();
+            return await commentCollection.find({ postId: args.postId }).toArray();
         }
     },
 
@@ -57,8 +63,8 @@ const postQueryResolvers = {
         },
 
         comments: async (parent, _, context) => {
-            const { commentsCollection } = await connectToDB();
-            return await commentsCollection.find({ postId: parent._id.toString() }).toArray();
+            const { commentCollection } = await connectToDB();
+            return await commentCollection.find({ postId: parent._id.toString() }).toArray();
         },
 
         user: async (parent, _, context) => {

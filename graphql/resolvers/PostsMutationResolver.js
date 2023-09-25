@@ -100,6 +100,23 @@ const postMutationResolvers = {
                 message: `Post removed`,
                 deletedCount: result.deletedCount,
             }
+        },
+
+        addComment: async (_, args, context) => {
+            runJwtVerification(context);
+            runSameUserCheck(args.userId, context)
+            const newComment = args.newComment;
+            const { commentCollection } = await connectToDB();
+            const result = await commentCollection.insertOne(newComment);
+            if (!result.insertedId) throw new Error("Failed to add comment");
+            newComment._id = result.insertedId;
+            return {
+                code: 200,
+                success: true,
+                message: `Comment added`,
+                insertedId: result.insertedId,
+                comment: newComment,
+            }
         }
     }
 }

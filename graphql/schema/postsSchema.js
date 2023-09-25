@@ -49,6 +49,7 @@ const typeDefs = `#graphql
         feedPosts(userId: ID!): [Post]
         savedPosts(userId: ID!): [SavedPost]
         isPostAlreadySaved(postId: ID!, userId: ID!): Boolean
+        commentsByPostId(postId: ID!): [Comment]
         # postsByUser(usrId: ID!): [Post]
     }
 
@@ -73,6 +74,13 @@ const typeDefs = `#graphql
         postId: ID,
         userId: ID,
         created_at: Date,
+    }
+
+    input comment {
+        postId: ID,
+        userId: ID,
+        created_at: Date,
+        caption: String,
     }
 
     type AddPostMutationResponse implements MutationResponse {
@@ -100,12 +108,21 @@ const typeDefs = `#graphql
         deletedCount: Int
     }
 
+    type AddCommentMutationResponse implements MutationResponse {
+        code: String!
+        success: Boolean!
+        message: String!
+        insertedId: String
+        comment: Comment #no new fetching, push insertedId in input and resend to the client
+    }
+
     extend type Mutation {
         addPost(newPost: post!): AddPostMutationResponse
         likePost(postId: ID!, postLikerId: ID!, created_at: Date!): LikePostMutationResponse
         unlikePost(likeId: ID!, postLikerId: ID!): LikePostMutationResponse
         savePost(postToSave: savePost!): SavePostMutationResponse
         removeSavedPost(postId: ID!, userId: ID!): SavePostMutationResponse
+        addComment(userId: ID!, newComment: comment): AddCommentMutationResponse
     }
 `;
 

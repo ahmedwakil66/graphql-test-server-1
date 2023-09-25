@@ -17,7 +17,7 @@ let todoCollection;
 let songsCollection;
 let postCollection;
 let likeCollection;
-let commentsCollection;
+let commentCollection;
 let savePostCollection;
 
 async function connectToDB() {
@@ -45,8 +45,8 @@ async function connectToDB() {
         if (!likeCollection) {
             likeCollection = reactBootcampDB.collection('likes');
         }
-        if (!commentsCollection) {
-            commentsCollection = reactBootcampDB.collection('comments');
+        if (!commentCollection) {
+            commentCollection = reactBootcampDB.collection('comments');
         }
         if (!savePostCollection) {
             savePostCollection = reactBootcampDB.collection('save_posts');
@@ -58,7 +58,7 @@ async function connectToDB() {
             songsCollection,
             postCollection,
             likeCollection,
-            commentsCollection,
+            commentCollection,
             savePostCollection
         }
     }
