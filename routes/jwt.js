@@ -1,6 +1,7 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import connectToDB from '../dbConfig/dbGql.js';
+import { ObjectId } from 'mongodb';
 const router = express.Router();
 
 router.post('/', async (req, res) => {
@@ -18,7 +19,7 @@ router.post('/', async (req, res) => {
     }
     const userId = userData._id.toString();
     const token = jwt.sign(userData, process.env.JWT_SECRET, { expiresIn: '1h' });
-    const tokenId = jwt.sign({userId}, process.env.JWT_SECRET2, { expiresIn: '1h' });
+    const tokenId = jwt.sign({ userId }, process.env.JWT_SECRET2, { expiresIn: '1h' });
 
     res.cookie("token_ca", token, {
         expires: new Date(Date.now() + 7 * 60 * 60 * 1000),

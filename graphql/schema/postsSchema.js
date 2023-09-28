@@ -6,6 +6,8 @@ const typeDefs = `#graphql
         created_at: Date,
         location: String,
         media: [Media],
+        likesAggregate: LikesAggregate
+        commentsAggregate: CommentsAggregate
         likes: [Like],
         comments: [Comment],
         user: User,
@@ -18,6 +20,16 @@ const typeDefs = `#graphql
         height: Int,
         type: String,
         format: String,
+    }
+
+    type LikesAggregate {
+        count: Int,
+        likes: [Like]
+    }
+
+    type CommentsAggregate {
+        count: Int,
+        comments: [Comment]
     }
 
     type Like {
@@ -44,12 +56,31 @@ const typeDefs = `#graphql
         saved: Post,
     }
 
+    type Notification {
+        _id: ID,
+        postId: ID,
+        senderId: ID,
+        receiverId: ID,
+        created_at: Int64,
+        type: NotificationTypes,
+        post: Post,
+        sender: User,
+    }
+
+    enum NotificationTypes {
+        LIKE
+        FOLLOW
+        COMMENT
+    }
+
     extend type Query {
         post(postId: ID!): Post
         feedPosts(userId: ID!): [Post]
         savedPosts(userId: ID!): [SavedPost]
         isPostAlreadySaved(postId: ID!, userId: ID!): Boolean
         commentsByPostId(postId: ID!): [Comment]
+        notifications(receiverId: ID!, lastChecked: Int64): [Notification]
+        exploreGridPosts(userId: ID!, limit: Int): [Post]
         # postsByUser(usrId: ID!): [Post]
     }
 
@@ -83,6 +114,14 @@ const typeDefs = `#graphql
         caption: String,
     }
 
+    input notification {
+        postId: ID,
+        senderId: ID!,
+        receiverId: ID!,
+        created_at: Int64!,
+        type: NotificationTypes!
+    }
+
     type AddPostMutationResponse implements MutationResponse {
         code: String!
         success: Boolean!
@@ -113,7 +152,24 @@ const typeDefs = `#graphql
         success: Boolean!
         message: String!
         insertedId: String
+        deletedCount: Int
         comment: Comment #no new fetching, push insertedId in input and resend to the client
+    }
+
+    type NotificationMutationResponse implements MutationResponse {
+        code: String!
+        success: Boolean!
+        message: String!
+        insertedId: String
+        deletedCount: Int
+        notification: Notification #no new fetching, push insertedId in input and resend to the client
+    }
+
+    type ResetNotificationMutationResponse implements MutationResponse {
+        code: String!
+        success: Boolean!
+        message: String!
+        modifiedCount: Int
     }
 
     extend type Mutation {
@@ -122,7 +178,10 @@ const typeDefs = `#graphql
         unlikePost(likeId: ID!, postLikerId: ID!): LikePostMutationResponse
         savePost(postToSave: savePost!): SavePostMutationResponse
         removeSavedPost(postId: ID!, userId: ID!): SavePostMutationResponse
-        addComment(userId: ID!, newComment: comment): AddCommentMutationResponse
+        addComment(userId: ID!, newComment: comment!): AddCommentMutationResponse
+        sendNotification(newNotification: notification!): NotificationMutationResponse
+        deleteNotification(postId: ID, receiverId: ID senderId: ID!, type: NotificationTypes!): NotificationMutationResponse
+        resetNotifications(userId: ID!): ResetNotificationMutationResponse
     }
 `;
 

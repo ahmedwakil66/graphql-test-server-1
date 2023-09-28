@@ -1,5 +1,5 @@
 const typeDefs = `#graphql
-type User{
+  type User{
     _id: ID
     email: String
     username: String
@@ -14,12 +14,48 @@ type User{
     image: String
     created_at: Date
     role: Role
-    last_notification_checked: Date
-}
+    last_notification_checked: Int64
+    savedPosts: [SavedPost]
+    followingAggregate: FollowingAggregate
+  }
 
-type Email {
-  email: String
-}
+  type Email {
+    email: String
+  }
+
+  type SavedPost {
+    _id: ID
+    postId: ID
+    userId: ID
+    created_at: Date
+    post: Post
+  }
+
+  type FollowingAggregate {
+    count: Int
+    following: [Follow]
+  }
+
+  type PublicProfile {
+    _id: ID
+    username: String
+    displayName: String
+    bio: String
+    phone: String
+    website: String
+    image: String
+    followerCount: Int
+    followingCount: Int
+    posts: [Post]
+    # follower: [Follow]
+    # following: [Follow]
+  }
+
+  type Follow {
+    _id: ID
+    userId: ID # the one following
+    profileId: ID # the one is followed
+  }
 
   enum Role {
     USER
@@ -31,6 +67,8 @@ type Email {
     searchUsers(userId: ID!, keyword: String!): [User]
     isUsernameTaken(username: String): Boolean
     getEmailFromUsername(username: String): Email
+    publicProfile(username: String!): PublicProfile
+    followSuggestion(userId: ID!): [User]
   }
 
   input user {
@@ -58,6 +96,12 @@ type Email {
     sex: String
   }
 
+  input follow {
+    created_at: Int64
+    userId: ID # the one following
+    profileId: ID # the one is followed
+  }
+
   type StoreUserMutationResponse implements MutationResponse {
     code: String!
     success: Boolean!
@@ -73,9 +117,20 @@ type Email {
     modifiedCount: Int
   }
 
+  type FollowUserMutationResponse implements MutationResponse {
+    code: String!
+    success: Boolean!
+    message: String!
+    insertedId: ID
+    deletedCount: Int
+    following: Follow
+  }
+
   extend type Mutation {
     storeUser(input:user): StoreUserMutationResponse
     updateUser(userId: ID!, updatedDoc: updateUser!): UpdateUserMutationResponse
+    followUser(newFollow: follow!): FollowUserMutationResponse
+    unFollowUser(userId: ID!, profileId: ID!): FollowUserMutationResponse
   }
 `;
 

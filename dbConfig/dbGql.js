@@ -18,7 +18,9 @@ let songsCollection;
 let postCollection;
 let likeCollection;
 let commentCollection;
-let savePostCollection;
+let savedPostCollection;
+let notificationCollection;
+let followCollection;
 
 async function connectToDB() {
     try {
@@ -48,8 +50,14 @@ async function connectToDB() {
         if (!commentCollection) {
             commentCollection = reactBootcampDB.collection('comments');
         }
-        if (!savePostCollection) {
-            savePostCollection = reactBootcampDB.collection('save_posts');
+        if (!savedPostCollection) {
+            savedPostCollection = reactBootcampDB.collection('save_posts');
+        }
+        if(!notificationCollection) {
+            notificationCollection = reactBootcampDB.collection('notifications');
+        }
+        if(!followCollection) {
+            followCollection = reactBootcampDB.collection('follows');
         }
 
         return {
@@ -59,7 +67,9 @@ async function connectToDB() {
             postCollection,
             likeCollection,
             commentCollection,
-            savePostCollection
+            savedPostCollection,
+            notificationCollection,
+            followCollection,
         }
     }
 

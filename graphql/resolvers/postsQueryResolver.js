@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import connectToDB from "../../dbConfig/dbGql.js";
 import { runJwtVerification, runSameUserCheck } from "../../verificationFunctions/verifyJWT.js";
+import pipeline_getFollowerIds from "../../pipelines/pipeline_getFollowerIds.js";
 
 const postQueryResolvers = {
     Query: {
@@ -31,8 +32,8 @@ const postQueryResolvers = {
         savedPosts: async (_, args, context) => {
             // runJwtVerification(context)
             // runSameUserCheck(args.userId, context)
-            const { savePostCollection } = await connectToDB();
-            return savePostCollection.find(
+            const { savedPostCollection } = await connectToDB();
+            return savedPostCollection.find(
                 { userId: args.userId },
                 { sort: { created_at: -1 } }
             ).toArray()
@@ -41,33 +42,84 @@ const postQueryResolvers = {
         isPostAlreadySaved: async (_, args, context) => {
             runJwtVerification(context);
             runSameUserCheck(args.userId, context);
-            const { savePostCollection } = await connectToDB();
-            const result = await savePostCollection.findOne(
+            const { savedPostCollection } = await connectToDB();
+            const result = await savedPostCollection.findOne(
                 { postId: args.postId, userId: args.userId }
             );
             return Boolean(result)
         },
 
-        commentsByPostId: async(_, args, context) => {
+        commentsByPostId: async (_, args, context) => {
             // runJwtVerification(context);
             const { commentCollection } = await connectToDB();
             return await commentCollection.find({ postId: args.postId }).toArray();
+        },
+
+        notifications: async (_, args, context) => {
+            // runJwtVerification(context);
+            // runSameUserCheck(args.receiverId, context);
+            const { notificationCollection } = await connectToDB();
+            if (args.lastChecked) {
+                return await notificationCollection.find(
+                    {
+                        receiverId: args.receiverId,
+                        created_at: { $gt: args.lastChecked }
+                    },
+                    { sort: { created_at: -1 } }
+                ).toArray();
+            } else {
+                return await notificationCollection.find(
+                    { receiverId: args.receiverId },
+                    { sort: { created_at: -1 } }
+                ).toArray();
+            }
+        },
+
+        exploreGridPosts: async (_, args, context) => {
+            // runJwtVerification(context);
+            const userId = args.userId; const limit = args.limit || 50;
+            const { followCollection, postCollection } = await connectToDB();
+            // get user's already following ids
+            const aggregate = await followCollection.aggregate(pipeline_getFollowerIds(userId)).toArray();
+            let followerIds = [];
+            if (aggregate[0]) followerIds = aggregate[0].profileIds;
+            // explore page should not have user's own posts, so
+            followerIds.unshift(userId);
+            const exploreGridPosts = await postCollection.find(
+                { userId: { $nin: followerIds }, privacy: { $ne: 'HIDDEN' } },
+                { projection: { _id: 1, media: 1 }, sort: { created_at: -1 } }
+            ).limit(limit).toArray();
+            return exploreGridPosts;
         }
     },
 
 
     Post: {
-        likes: async (parent, _, context) => {
+        likesAggregate: async (parent) => {
+            const { likeCollection } = await connectToDB();
+            const count = await likeCollection.countDocuments({ postId: parent._id.toString() });
+            return {
+                count,
+                postId: parent._id.toString()
+            }
+        },
+        commentsAggregate: async (parent) => {
+            const { commentCollection } = await connectToDB();
+            const count = await commentCollection.countDocuments({ postId: parent._id.toString() });
+            return {
+                count,
+                postId: parent._id.toString()
+            }
+        },
+        likes: async (parent) => {
             const { likeCollection } = await connectToDB();
             return await likeCollection.find({ postId: parent._id.toString() }).toArray();
         },
-
-        comments: async (parent, _, context) => {
+        comments: async (parent) => {
             const { commentCollection } = await connectToDB();
             return await commentCollection.find({ postId: parent._id.toString() }).toArray();
         },
-
-        user: async (parent, _, context) => {
+        user: async (parent) => {
             const { userCollection } = await connectToDB();
             return await userCollection.findOne(
                 { _id: new ObjectId(parent.userId) },
@@ -75,7 +127,23 @@ const postQueryResolvers = {
                     projection: { _id: 0, displayName: 1, image: 1, username: 1 }
                 }
             )
-        }
+        },
+    },
+
+
+    LikesAggregate: {
+        likes: async (parent) => {
+            const { likeCollection } = await connectToDB();
+            return await likeCollection.find({ postId: parent.postId }).toArray();
+        },
+    },
+
+
+    CommentsAggregate: {
+        comments: async (parent) => {
+            const { commentCollection } = await connectToDB();
+            return await commentCollection.find({ postId: parent.postId }).toArray();
+        },
     },
 
 
@@ -97,6 +165,24 @@ const postQueryResolvers = {
         saved: async (parent, _, context) => {
             const { postCollection } = await connectToDB();
             return await postCollection.findOne({ _id: new ObjectId(parent.postId) })
+        }
+    },
+
+
+    Notification: {
+        post: async (parent) => {
+            const { postCollection } = await connectToDB();
+            return await postCollection.findOne(
+                { _id: new ObjectId(parent.postId) },
+                { projection: { _id: 1, media: 1 } }
+            )
+        },
+        sender: async (parent) => {
+            const { userCollection } = await connectToDB();
+            return await userCollection.findOne(
+                { _id: new ObjectId(parent.senderId) },
+                { projection: { _id: 0, displayName: 1, image: 1, username: 1 } }
+            )
         }
     }
 }

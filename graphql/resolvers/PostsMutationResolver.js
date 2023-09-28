@@ -74,8 +74,8 @@ const postMutationResolvers = {
         savePost: async (_, args, context) => {
             runJwtVerification(context);
             runSameUserCheck(args.postToSave.userId, context);
-            const { savePostCollection } = await connectToDB();
-            const result = await savePostCollection.insertOne(args.postToSave);
+            const { savedPostCollection } = await connectToDB();
+            const result = await savedPostCollection.insertOne(args.postToSave);
             if (!result.insertedId) throw new Error("Failed to save post");
             return {
                 code: 200,
@@ -88,11 +88,10 @@ const postMutationResolvers = {
         removeSavedPost: async (_, args, context) => {
             runJwtVerification(context);
             runSameUserCheck(args.userId, context);
-            const { savePostCollection } = await connectToDB();
-            const result = await savePostCollection.deleteOne(
+            const { savedPostCollection } = await connectToDB();
+            const result = await savedPostCollection.deleteOne(
                 { postId: args.postId, userId: args.userId }
             );
-            console.log('remove',result);
             if (result.deletedCount !== 1) throw new Error("Failed to remove this saved post");
             return {
                 code: 200,
@@ -116,6 +115,60 @@ const postMutationResolvers = {
                 message: `Comment added`,
                 insertedId: result.insertedId,
                 comment: newComment,
+            }
+        },
+
+        sendNotification: async (_, args, context) => {
+            runJwtVerification(context);
+            const newNotification = args.newNotification;
+            runSameUserCheck(newNotification.senderId, context);
+            const { notificationCollection } = await connectToDB();
+            const result = await notificationCollection.insertOne(newNotification);
+            if (!result.insertedId) throw new Error("Failed to send notification");
+            newNotification.insertedId = result.insertedId;
+            return {
+                code: 200,
+                success: true,
+                message: `Notification sent`,
+                insertedId: result.insertedId,
+                notification: newNotification,
+            }
+        },
+
+        deleteNotification: async (_, args, context) => {
+            runJwtVerification(context);
+            const query = {
+                senderId: args.senderId,
+                type: args.type
+            }
+            if(args.postId) {query.postId = args.postId;}
+            else {query.receiverId = args.receiverId};
+
+            const { notificationCollection } = await connectToDB();
+            const result = await notificationCollection.deleteOne(query);
+            if (result.deletedCount !== 1) throw new Error("Failed to delete notification");
+            return {
+                code: 200,
+                success: true,
+                message: `Notification removed`,
+                deletedCount: result.deletedCount,
+            }
+        },
+
+        resetNotifications: async (_, args, context) => {
+            runJwtVerification(context);
+            runSameUserCheck(args.userId, context);
+            const { userCollection } = await connectToDB();
+            const result = await userCollection.updateOne(
+                { _id: new ObjectId(args.userId) },
+                { $set: { last_notification_checked: Date.now() } }
+            );
+            if (!result.modifiedCount) throw new Error("Failed to reset the notifications");
+            return {
+                code: 200,
+                success: true,
+                message: `Notification has been reset`,
+                modifiedCount: result.modifiedCount,
             }
         }
     }

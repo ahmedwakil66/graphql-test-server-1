@@ -21,6 +21,7 @@ const rootSchema = `#graphql
   }
 
   scalar Date
+  scalar Int64
 `;
 
 export default [rootSchema, usersSchema, todosSchema, songsSchema, postsSchema];
