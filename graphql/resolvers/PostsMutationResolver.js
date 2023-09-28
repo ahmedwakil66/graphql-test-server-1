@@ -25,6 +25,27 @@ const postMutationResolvers = {
             }
         },
 
+        deletePost: async (_, args, context) => {
+            const userId = args.userId; const postId = args.postId;
+            // runJwtVerification(context);
+            // runSameUserCheck(userId);
+            const { postCollection, likeCollection, commentCollection, notificationCollection } = await connectToDB();
+            const deletePost = await postCollection.deleteOne({ _id: new ObjectId(postId), userId: userId });
+            if (deletePost.deletedCount !== 1) throw new Error('Could not delete the post. Try again later');
+            const deleteLikes = await likeCollection.deleteMany({ postId: postId });
+            const deleteComments = await commentCollection.deleteMany({ postId: postId });
+            const deleteNotification = await notificationCollection.deleteMany({ postId: postId });
+            return {
+                code: "200",
+                success: true,
+                message: `Post deleted`,
+                postDeleted: deletePost.deletedCount,
+                likesDeleted: deleteLikes.deletedCount,
+                commentsDeleted: deleteComments.deletedCount,
+                notificationDeleted: deleteNotification.deletedCount
+            }
+        },
+
         likePost: async (_, args, context) => {
             const { postId, postLikerId, created_at } = args;
             runJwtVerification(context);
@@ -141,8 +162,8 @@ const postMutationResolvers = {
                 senderId: args.senderId,
                 type: args.type
             }
-            if(args.postId) {query.postId = args.postId;}
-            else {query.receiverId = args.receiverId};
+            if (args.postId) { query.postId = args.postId; }
+            else { query.receiverId = args.receiverId };
 
             const { notificationCollection } = await connectToDB();
             const result = await notificationCollection.deleteOne(query);

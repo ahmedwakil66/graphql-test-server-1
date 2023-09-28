@@ -20,13 +20,22 @@ const postQueryResolvers = {
         },
 
         feedPosts: async (_, args, context) => {
+            const userId = args.userId; const olderThan = args.createdAt;
             // runJwtVerification(context);
-            const { postCollection } = await connectToDB();
-            return await postCollection.find(
-                // { userId: { $ne: args.userId } },
-                {},
+            const { followCollection, postCollection } = await connectToDB();
+            // get user's already following ids
+            const aggregate = await followCollection.aggregate(pipeline_getFollowerIds(userId)).toArray();
+            let followingIds = [];
+            if (aggregate[0]) followingIds = aggregate[0].profileIds;
+            // default query: all following people's posts
+            let query = { userId: { $in: followingIds } };
+            // if a time specified, query for only older posts than that time
+            if (olderThan) query = { userId: { $in: followingIds }, created_at: { $lt: olderThan } }
+            const feedPosts = await postCollection.find(
+                query,
                 { sort: { created_at: -1 } }
-            ).toArray()
+            ).limit(7).toArray(); // 7 posts at one go
+            return feedPosts;
         },
 
         savedPosts: async (_, args, context) => {

@@ -3,7 +3,7 @@ const typeDefs = `#graphql
         _id: ID,
         userId: ID,
         caption: String,
-        created_at: Date,
+        created_at: Int64,
         location: String,
         media: [Media],
         likesAggregate: LikesAggregate
@@ -75,7 +75,7 @@ const typeDefs = `#graphql
 
     extend type Query {
         post(postId: ID!): Post
-        feedPosts(userId: ID!): [Post]
+        feedPosts(userId: ID!, createdAt: Int64): [Post]
         savedPosts(userId: ID!): [SavedPost]
         isPostAlreadySaved(postId: ID!, userId: ID!): Boolean
         commentsByPostId(postId: ID!): [Comment]
@@ -89,7 +89,7 @@ const typeDefs = `#graphql
         caption: String,
         media: [media],
         location: String,
-        created_at: Date!,
+        created_at: Int64!,
     }
 
     input media {
@@ -128,6 +128,16 @@ const typeDefs = `#graphql
         message: String!
         insertedId: String
         post: Post #no new fetching, push insertedId in input and resend to the client
+    }
+
+    type DeletePostMutationResponse implements MutationResponse {
+        code: String!
+        success: Boolean!
+        message: String!
+        postDeleted: Int
+        likesDeleted: Int
+        commentsDeleted: Int
+        notificationDeleted: Int
     }
 
     type LikePostMutationResponse implements MutationResponse {
@@ -174,6 +184,7 @@ const typeDefs = `#graphql
 
     extend type Mutation {
         addPost(newPost: post!): AddPostMutationResponse
+        deletePost(userId: ID!, postId: ID!): DeletePostMutationResponse
         likePost(postId: ID!, postLikerId: ID!, created_at: Date!): LikePostMutationResponse
         unlikePost(likeId: ID!, postLikerId: ID!): LikePostMutationResponse
         savePost(postToSave: savePost!): SavePostMutationResponse
