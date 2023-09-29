@@ -138,6 +138,7 @@ const typeDefs = `#graphql
         likesDeleted: Int
         commentsDeleted: Int
         notificationDeleted: Int
+        savePostsDeleted: Int
     }
 
     type LikePostMutationResponse implements MutationResponse {

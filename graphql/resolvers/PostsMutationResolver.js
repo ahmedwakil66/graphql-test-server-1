@@ -29,12 +29,13 @@ const postMutationResolvers = {
             const userId = args.userId; const postId = args.postId;
             // runJwtVerification(context);
             // runSameUserCheck(userId);
-            const { postCollection, likeCollection, commentCollection, notificationCollection } = await connectToDB();
+            const { postCollection, likeCollection, commentCollection, notificationCollection, savedPostCollection } = await connectToDB();
             const deletePost = await postCollection.deleteOne({ _id: new ObjectId(postId), userId: userId });
             if (deletePost.deletedCount !== 1) throw new Error('Could not delete the post. Try again later');
             const deleteLikes = await likeCollection.deleteMany({ postId: postId });
             const deleteComments = await commentCollection.deleteMany({ postId: postId });
             const deleteNotification = await notificationCollection.deleteMany({ postId: postId });
+            const deleteSavePosts = await savedPostCollection.deleteMany({ postId: postId });
             return {
                 code: "200",
                 success: true,
@@ -42,7 +43,8 @@ const postMutationResolvers = {
                 postDeleted: deletePost.deletedCount,
                 likesDeleted: deleteLikes.deletedCount,
                 commentsDeleted: deleteComments.deletedCount,
-                notificationDeleted: deleteNotification.deletedCount
+                notificationDeleted: deleteNotification.deletedCount,
+                savePostsDeleted: deleteSavePosts.deletedCount
             }
         },
 
