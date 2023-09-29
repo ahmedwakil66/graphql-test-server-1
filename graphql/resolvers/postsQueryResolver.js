@@ -25,8 +25,9 @@ const postQueryResolvers = {
             const { followCollection, postCollection } = await connectToDB();
             // get user's already following ids
             const aggregate = await followCollection.aggregate(pipeline_getFollowerIds(userId)).toArray();
-            let followingIds = [];
-            if (aggregate[0]) followingIds = aggregate[0].profileIds;
+            // let user also see his own posts in feed
+            let followingIds = [userId];
+            if (aggregate[0]) followingIds = [userId, ...aggregate[0].profileIds];
             // default query: all following people's posts
             let query = { userId: { $in: followingIds } };
             // if a time specified, query for only older posts than that time
@@ -86,7 +87,7 @@ const postQueryResolvers = {
 
         exploreGridPosts: async (_, args, context) => {
             // runJwtVerification(context);
-            const userId = args.userId; const limit = args.limit || 50;
+            const userId = args.userId; const limit = args.limit || 24;
             const { followCollection, postCollection } = await connectToDB();
             // get user's already following ids
             const aggregate = await followCollection.aggregate(pipeline_getFollowerIds(userId)).toArray();
@@ -101,7 +102,6 @@ const postQueryResolvers = {
             return exploreGridPosts;
         }
     },
-
 
     Post: {
         likesAggregate: async (parent) => {
@@ -193,7 +193,7 @@ const postQueryResolvers = {
                 { projection: { _id: 0, displayName: 1, image: 1, username: 1 } }
             )
         }
-    }
+    },
 }
 
 export default postQueryResolvers;
