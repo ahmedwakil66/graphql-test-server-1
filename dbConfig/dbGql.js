@@ -21,6 +21,7 @@ let commentCollection;
 let savedPostCollection;
 let notificationCollection;
 let followCollection;
+let reportCollection;
 
 async function connectToDB() {
     try {
@@ -59,6 +60,9 @@ async function connectToDB() {
         if(!followCollection) {
             followCollection = reactBootcampDB.collection('follows');
         }
+        if(!reportCollection) {
+            reportCollection = reactBootcampDB.collection('reports');
+        }
 
         return {
             userCollection,
@@ -70,6 +74,7 @@ async function connectToDB() {
             savedPostCollection,
             notificationCollection,
             followCollection,
+            reportCollection,
         }
     }
 

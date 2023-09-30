@@ -1,7 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import connectToDB from '../dbConfig/dbGql.js';
-import { ObjectId } from 'mongodb';
 const router = express.Router();
 
 router.post('/', async (req, res) => {
