@@ -2,8 +2,8 @@ import jwt from "jsonwebtoken";
 
 //verify JWT token from cookies, used in context creation function
 export const verifyJWT = (cookies, headers) => {
-    console.log('req headers', headers);
-    const token = headers.token_ca; const tokenId = headers.token_id_ca;
+    const token = headers.token_ca; 
+    const tokenId = headers.token_id_ca;
     let userContext = {};
     if(!token || !tokenId) {
         userContext.jwtVerified = false;
