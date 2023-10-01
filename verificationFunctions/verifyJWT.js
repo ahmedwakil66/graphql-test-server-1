@@ -1,15 +1,23 @@
 import jwt from "jsonwebtoken";
 
 //verify JWT token from cookies, used in context creation function
-export const verifyJWT = (cookies) => {
+export const verifyJWT = (cookies, headers) => {
+    console.log('req headers', headers);
+    const token = headers.token_ca; const tokenId = headers.token_id_ca;
     let userContext = {};
-    if (!cookies || !cookies.token_ca || !cookies.userId_ca) {
+    if(!token || !tokenId) {
         userContext.jwtVerified = false;
         userContext.user = null;
-        userContext.message = "Identity cookies must be sent with request.";
+        userContext.message = "Identity tokens must be sent with request headers.";
     }
+    // if (!cookies || !cookies.token_ca || !cookies.userId_ca) {
+    //     userContext.jwtVerified = false;
+    //     userContext.user = null;
+    //     userContext.message = "Identity cookies must be sent with request.";
+    // }
+
     //verification level 1: jwt
-    jwt.verify(cookies.token_ca, process.env.JWT_SECRET, (error, decoded) => {
+    jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
         if (error) {
             userContext.jwtVerified = false;
             userContext.user = null;
@@ -19,7 +27,7 @@ export const verifyJWT = (cookies) => {
             userContext.user = decoded;
             userContext.jwtVerified = true;
             // verification level 2: same user
-            jwt.verify(cookies.userId_ca, process.env.JWT_SECRET2, (_, decoded) => {
+            jwt.verify(tokenId, process.env.JWT_SECRET2, (_, decoded) => {
                 if (userContext.user._id === decoded.userId) {
                     userContext.isSameUser = true;
                 }
@@ -36,7 +44,7 @@ export const verifyJWT = (cookies) => {
 
 //check if user is JWT verified, used in queries and mutations
 export const runJwtVerification = (context) => {
-    if (!context.jwtVerified) throw new Error("User verification failed, need appropriate token with cookies.");
+    if (!context.jwtVerified) throw new Error("User verification failed, need appropriate token with request headers.");
 }
 
 

@@ -48,7 +48,7 @@ await server.start();
 
 app.use('/graphql', expressMiddleware(server, {
   context: async({req}) => {
-    const userContext = verifyJWT(req.cookies);
+    const userContext = verifyJWT(req.cookies, req.headers);
     return {...userContext}
   }
 }));

@@ -32,7 +32,7 @@ router.post('/', async (req, res) => {
         secure: true,
         sameSite: 'none',
     });
-    res.send({ success: true, message: "token and tokenId cookies are sent", token });
+    res.send({ success: true, message: "token and tokenId cookies are sent", token, tokenId });
 })
 
 
