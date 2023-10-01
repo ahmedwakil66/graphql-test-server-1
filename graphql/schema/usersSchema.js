@@ -81,6 +81,7 @@ const typeDefs = `#graphql
     image: String
     age: Int
     sex: String
+    last_notification_checked: Int64
   }
 
   input updateUser {
